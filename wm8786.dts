@@ -1,0 +1,52 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&i2s>;
+        __overlay__ {
+            status = "okay";
+        };
+    };
+
+    fragment@1 {
+        target-path = "/";
+        __overlay__ {
+                wm8786_codec: wm8786-codec {
+                #sound-dai-cells = <0>;
+                compatible = "wlf,wm8786";
+		Vdda-supply = <&vdd_3v3_reg>;
+		Vdd-supply = <&vdd_3v3_reg>;
+                status = "okay";
+            };
+        };
+    };
+
+    fragment@2 {
+        target = <&sound>;
+            sound_overlay: __overlay__ {
+            compatible = "simple-audio-card";
+            simple-audio-card,format = "left_j";
+            simple-audio-card,name = "wm8786";
+            simple-audio-card,bitclock-slave = <&dailink0_slave>;
+            simple-audio-card,frame-slave = <&dailink0_slave>;
+	    simple-audio-card,mclk-fs = <256>;
+	    simple-audio-card,widgets = "Line", "Line In";
+            simple-audio-card,routing = "AIN", "Line In";
+            status = "okay";
+            simple-audio-card,cpu {
+                sound-dai = <&i2s>;
+            };
+            dailink0_slave: simple-audio-card,codec {
+                sound-dai = <&wm8786_codec>;
+            };
+        };
+    };
+
+
+    __overrides__ {
+        card-name = <&sound_overlay>,"simple-audio-card,name";
+    };
+};
